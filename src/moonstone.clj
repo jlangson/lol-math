@@ -17,8 +17,17 @@
   (let [procs (int (/ sec (:base-cd moonstone)))
         fast-procs (int (/ sec (:ingenious-hunter-cd moonstone)))]
     (println procs " " fast-procs)
-    [ {:base-moonstone (* procs (:base-heal moonstone))}
-     {:ingenious-hunter-heal (* fast-procs (:base-heal moonstone))}
-     {:revitalize-heal-highhp (* procs (:base-heal moonstone) (:high-hp revitalize))}
-     {:revitalize-heal-hplow (* procs (:base-heal moonstone) (:low-hp revitalize))}
-     ]))
+    {:base-moonstone (* procs (:base-heal moonstone))
+     :ingenious-hunter-heal (* fast-procs (:base-heal moonstone))
+     :revitalize-heal-highhp (* procs (:base-heal moonstone) (:high-hp revitalize))
+     :revitalize-heal-hplow (* procs (:base-heal moonstone) (:low-hp revitalize))}))
+
+(defn shielding [ap]
+  (let [base (+ 240 (* 0.45 ap))]
+    {:base base
+     :revitalize-hphigh (* base 1.05)
+     :revitalize-hplow (* base 1.10)}))
+
+(defn best [ap sec]
+  {:red   (+ (:base (shielding ap)) (:ingenious-hunter-heal (moonstone-healing sec)))
+   :green (+ (:revitalize-hplow (shielding ap)) (:revitalize-heal-hplow (moonstone-healing sec)))})
