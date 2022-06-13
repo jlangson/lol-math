@@ -13,21 +13,27 @@
 (def revitalize {:high-hp 1.05
                  :low-hp 1.10})
 
+
+
 (defn moonstone-healing [sec]
   (let [procs (int (/ sec (:base-cd moonstone)))
         fast-procs (int (/ sec (:ingenious-hunter-cd moonstone)))]
-    (println procs " " fast-procs)
+    (println "moonstone base procs" procs "\t moonstone fast procs" fast-procs)
     {:base-moonstone (* procs (:base-heal moonstone))
      :ingenious-hunter-heal (* fast-procs (:base-heal moonstone))
      :revitalize-heal-highhp (* procs (:base-heal moonstone) (:high-hp revitalize))
      :revitalize-heal-hplow (* procs (:base-heal moonstone) (:low-hp revitalize))}))
 
-(defn shielding [ap]
-  (let [base (+ 240 (* 0.45 ap))]
+;; reasonable AH at lvl 13 is 70. Ionian + Transcedne + Chem purifier + Moonstone
+;; This translates to 41.18% CDR
+(defn shielding [ap sec cdr]
+  (let [procs (int (/ sec (* (- 1 cdr) 8)))                 ;; 8 magic number is cd of lvl 5 shield
+        base (* procs (+ 240 (* 0.45 ap)))]
+    (println "shield procs " procs)
     {:base base
      :revitalize-hphigh (* base 1.05)
      :revitalize-hplow (* base 1.10)}))
 
-(defn best [ap sec]
-  {:red   (+ (:base (shielding ap)) (:ingenious-hunter-heal (moonstone-healing sec)))
-   :green (+ (:revitalize-hplow (shielding ap)) (:revitalize-heal-hplow (moonstone-healing sec)))})
+(defn best [ap sec cdr]
+  {:red   (+ (:base (shielding ap sec cdr)) (:ingenious-hunter-heal (moonstone-healing sec)))
+   :green (+ (:revitalize-hplow (shielding ap sec cdr)) (:revitalize-heal-hplow (moonstone-healing sec)))})
